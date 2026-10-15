@@ -2,6 +2,18 @@
 
 Aplikasi belajar mufradat bahasa Arab berbasis Next.js, React, TypeScript dan Supabase. Palet: `#F6E2E9`, `#FEFAF3`, `#B8CFB3`, `#84A282`.
 
+## Deploy fullstack ke Netlify
+
+1. Unggah seluruh isi folder ini ke root repository GitHub. `package.json`, `package-lock.json`, dan `netlify.toml` harus sejajar. Jangan unggah ZIP ini langsung ke Netlify Drop.
+2. Impor repository dari Netlify. Kosongkan Base directory dan Package directory jika package.json berada di root. Build command: `npm run build`. Publish directory: `.next`.
+3. Adapter `@netlify/plugin-nextjs` dipasang secara eksplisit di devDependencies dan netlify.toml, agar halaman dan API route dikemas untuk Netlify. Jangan menonaktifkan adapter di pengaturan Netlify. Hapus NETLIFY_NEXT_PLUGIN_SKIP jika ada; jangan set NPM_FLAGS=--omit=dev atau NODE_ENV=production pada fase instalasi karena adapter adalah devDependency.
+4. Untuk login dan sinkronisasi, jalankan `supabase/schema.sql` di Supabase, aktifkan Email/Password, lalu tambahkan SUPABASE_URL dan SUPABASE_ANON_KEY di Netlify dengan scope Builds dan Functions. Gunakan anon key, bukan service_role key. Tanpa variabel ini mode tamu tetap tersedia.
+5. Atur Site URL Supabase ke URL HTTPS Netlify aplikasi. Tambahkan URL tersebut ke daftar redirect yang diizinkan bila diperlukan alur konfirmasi email.
+6. Commit lalu deploy. Untuk situs lama gunakan Clear cache and deploy. Log harus menunjukkan adapter Next.js berjalan dan pengemasan server function. Build sukses saja belum membuktikan adapter dijalankan.
+7. Buka `/`: halaman belajar harus tampil. Buka `/api/session`: harus mengembalikan JSON, bukan 404. Tanpa Supabase responsnya berisi configured:false. Setelah konfigurasi Supabase uji daftar, konfirmasi email, login, simpan progres, reload, dan logout.
+
+Jangan tambahkan redirect SPA ke /index.html dan jangan gunakan output:'export': aplikasi ini memerlukan API route server.
+
 ## Menjalankan secara lokal
 
 Prasyarat: Node.js 20.9+ dan npm. Ekstrak proyek, lalu jalankan dari folder yang berisi package.json:
@@ -18,7 +30,7 @@ Buka http://localhost:3000. Untuk mencoba mode tamu, kosongkan atau hapus `.env.
 
 1. Buat proyek Supabase milik Anda.
 2. Buka SQL Editor dan jalankan `supabase/schema.sql` sekali. Tabel progres menggunakan Row Level Security: pengguna hanya dapat membaca dan mengubah progresnya sendiri.
-3. Di Authentication, aktifkan login email/password. Atur Site URL ke domain Vercel Anda. Untuk pengembangan lokal, gunakan URL lokal sesuai kebutuhan pengujian konfirmasi email.
+3. Di Authentication, aktifkan login email/password. Atur Site URL ke domain Netlify Anda. Untuk pengembangan lokal, gunakan URL lokal sesuai kebutuhan pengujian konfirmasi email.
 4. Isi `.env.local` dengan URL proyek dan **anon key** dari Supabase. Jangan gunakan service_role key. Variabel ini dibaca oleh route server Next.js.
 5. Jalankan ulang server. Tombol akun kini menampilkan formulir daftar dan masuk. Jika konfirmasi email aktif, buka tautan konfirmasi dari email sebelum masuk.
 6. Uji dengan dua akun berbeda untuk memastikan pemisahan progres. Akun baru dimulai dari progres kosong; progres tamu tetap tersimpan terpisah dan tidak digabung otomatis.
